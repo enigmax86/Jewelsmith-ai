@@ -159,8 +159,8 @@ if "messages" in st.session_state:
                     # Call Flask endpoint for chatbot response
                     follow_up_question = call_flask_endpoint( chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': prompt_text})['body']
                     
-                    prompt_placeholder.markdown(f"Prompt Sent to GPT : {temp_sys_prompt_1} \n\n {prompt_text}")
-                    message_placeholder.markdown(follow_up_question)
+                    prompt_placeholder.markdown(f"Prompt Sent to Claude : {temp_sys_prompt_1} \n\n {prompt_text}") # Printing prompts sent to Claude
+                    message_placeholder.markdown(follow_up_question) # Printing follow_up_question
             st.session_state.messages.append({"role": "assistant", "content": follow_up_question})
         else:
             with st.chat_message("assistant"):
