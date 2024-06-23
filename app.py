@@ -110,15 +110,15 @@ if submitted:
         # Generate a caption for the uploaded image
         outfit_caption = call_flask_endpoint( image_caption_endpoint, {'image_path': outfit_image_path})['body']
         
-        # Store the generated caption in session state
-        # st.session_state.messages.append({"role": "user", "content": outfit_caption})
+        # printing success mssg 
         st.success(f"Outfit caption generated: {outfit_caption}")
         
     basic_info_str = basic_info_to_string(st.session_state.basic_info, outfit_caption)
     instruc = "Basic Info : " + basic_info_str + "[ Print only 1 follow up question and nothing extra ]" + "[ do not repeat questions in the basic info above ]"
     
     prompt1_placeholder = st.empty()
-    prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc)
+    ########################################################################################################################## OUTPUT FOR DEBUGGING
+    # prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc) # Output for Debugging
     
     # Call Flask endpoint for chatbot response
     follow_up_question1 = call_flask_endpoint(chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': instruc})['body']
