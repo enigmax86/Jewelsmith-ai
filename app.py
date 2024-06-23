@@ -5,6 +5,18 @@ import io
 import os
 import base64
 
+# # Custom CSS to increase the width
+# custom_css = """
+# <style>
+#     .css-1d391kg {  # This class name might change, inspect your Streamlit app to find the correct class
+#         max-width: 100% !important;
+#     }
+# </style>
+# """
+
+# st.markdown(custom_css, unsafe_allow_html=True)
+st.set_page_config(layout="wide")
+
 # Define the Flask server URL
 # FLASK_SERVER_URL = "http://localhost:5000"
 chatbot_response_endpoint = "https://yh6w674h63.execute-api.us-east-1.amazonaws.com/default/"
@@ -54,7 +66,10 @@ def call_flask_endpoint(endpoint, json_data):
         print(f'JSON decode error occurred: {json_err}')
         print("Response text:", response.text)
 
-st.title("Jewelry Design with Amazon Bedrock")
+st.title(f""":rainbow[Jewelry Design with Amazon Bedrock]""")
+
+# Special effects: balloons animations
+st.balloons()
 
 # Initial Form for Basic Information
 with st.form("initial_form"):
@@ -68,6 +83,9 @@ with st.form("initial_form"):
     outfit_image = st.file_uploader("Would you like to match your jewelry with an outfit? Upload an image of your outfit for better recommendations.", type=["jpg", "jpeg", "png"])
 
     submitted = st.form_submit_button("Submit")
+
+# Special effects: balloons animations
+st.balloons()
 
 if submitted:
     st.session_state.basic_info = {
