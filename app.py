@@ -23,6 +23,14 @@ chatbot_response_endpoint = "https://yh6w674h63.execute-api.us-east-1.amazonaws.
 image_generator_endpoint = "https://pi85ecdrbi.execute-api.us-east-1.amazonaws.com/default/"
 image_caption_endpoint = "https://i8g5wzii0m.execute-api.us-east-1.amazonaws.com/default"
 
+upload_image_endpoint = "https://vv82oev143.execute-api.us-east-1.amazonaws.com/stage01"
+
+# Function to call the upload_image endpoint
+def upload_image_to_s3(image_data):
+    response = requests.post(upload_image_endpoint, json={'image_data': image_data})
+    print(response.json())
+    return response.json()
+
 temp_sys_prompt_1 = """
 You are a friendly and engaging chatbot for a jewelry company. Based on the information provided below, please ask one follow-up question to the customer to understand their needs better. Follow these guidelines:
 
@@ -56,7 +64,7 @@ def basic_info_to_string(basic_info, outfit_caption):
 def call_flask_endpoint(endpoint, json_data):
     try:
         response = requests.post(f"{endpoint}", json=json_data)
-        print(response.json())
+        # print(response.json())
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
@@ -110,15 +118,15 @@ if submitted:
         # Generate a caption for the uploaded image
         outfit_caption = call_flask_endpoint( image_caption_endpoint, {'image_path': outfit_image_path})['body']
         
-        # printing success mssg 
+        # Store the generated caption in session state
+        # st.session_state.messages.append({"role": "user", "content": outfit_caption})
         st.success(f"Outfit caption generated: {outfit_caption}")
         
     basic_info_str = basic_info_to_string(st.session_state.basic_info, outfit_caption)
     instruc = "Basic Info : " + basic_info_str + "[ Print only 1 follow up question and nothing extra ]" + "[ do not repeat questions in the basic info above ]"
     
     prompt1_placeholder = st.empty()
-    ########################################################################################################################## OUTPUT FOR DEBUGGING
-    # prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc) # Output for Debugging
+    prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc)
     
     # Call Flask endpoint for chatbot response
     follow_up_question1 = call_flask_endpoint(chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': instruc})['body']
@@ -159,9 +167,8 @@ if "messages" in st.session_state:
                     # Call Flask endpoint for chatbot response
                     follow_up_question = call_flask_endpoint( chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': prompt_text})['body']
                     
-                    ########################################################################################################################## OUTPUT FOR DEBUGGING
-                    # prompt_placeholder.markdown(f"Prompt Sent to Claude : {temp_sys_prompt_1} \n\n {prompt_text}") # Printing prompts sent to Claude
-                    message_placeholder.markdown(follow_up_question) # Printing follow_up_question
+                    prompt_placeholder.markdown(f"Prompt Sent to GPT : {temp_sys_prompt_1} \n\n {prompt_text}")
+                    message_placeholder.markdown(follow_up_question)
             st.session_state.messages.append({"role": "assistant", "content": follow_up_question})
         else:
             with st.chat_message("assistant"):
@@ -195,7 +202,21 @@ if "messages" in st.session_state:
                     message_placeholder.markdown("Here are the images based on your inputs:")
                     for idx, img in enumerate(images):
                         st.image(img, caption=f"Generated Image {idx + 1}")
+                        
+                     # Uploading the image to S3 and getting the link
+                        image_buffer = io.BytesIO()
+                        img.save(image_buffer, format="PNG")
+                        image_base64 = base64.b64encode(image_buffer.getvalue()).decode()
+                        s3_response = upload_image_to_s3(image_base64)
+                        try :
+                            response_body = s3_response['body']
+                            s3_url = response_body.strip('"')
+                        except Exception as e:
+                            print(e)
+                            s3_url = "Sorry, could not get the url. Please try again "
+                            
+                        st.markdown(f"Access your image here: [Image {idx + 1}]({s3_url})")
                     
                     st.success("Images created")
 
-        # st.session_state.messages.append({"role": "assistant", "content": "Please provide more details if needed."})
+        st.session_state.messages.append({"role": "assistant", "content": "Please provide more details if needed."})
