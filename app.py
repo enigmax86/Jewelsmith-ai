@@ -131,8 +131,10 @@ if submitted:
     # Call Flask endpoint for chatbot response
     follow_up_question1 = call_flask_endpoint(chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': instruc})['body']
     
-    st.session_state.messages = [{"role": "assistant", "content": follow_up_question1}]
-    st.session_state.messages.append({"role": "user", "content": basic_info_str})
+    st.session_state.messages = [{"role": "user", "content": basic_info_str}]
+    
+    st.session_state.messages.append({"role": "assistant", "content": follow_up_question1})
+    # st.session_state.messages.append({"role": "user", "content": basic_info_str})
     st.session_state.question_count = 0
     st.session_state.max_questions = 5  # Can adjust the max number of questions here
 
