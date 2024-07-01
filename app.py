@@ -126,7 +126,7 @@ if submitted:
     instruc = "Basic Info : " + basic_info_str + "[ Print only 1 follow up question and nothing extra ]" + "[ do not repeat questions in the basic info above ]"
     
     prompt1_placeholder = st.empty()
-    prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc)
+    # prompt1_placeholder.markdown(temp_sys_prompt_1 + '\n\n' + instruc)
     
     # Call Flask endpoint for chatbot response
     follow_up_question1 = call_flask_endpoint(chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': instruc})['body']
@@ -167,7 +167,7 @@ if "messages" in st.session_state:
                     # Call Flask endpoint for chatbot response
                     follow_up_question = call_flask_endpoint( chatbot_response_endpoint, {'sys_prompt': temp_sys_prompt_1, 'user_prompt': prompt_text})['body']
                     
-                    prompt_placeholder.markdown(f"Prompt Sent to GPT : {temp_sys_prompt_1} \n\n {prompt_text}")
+                    # prompt_placeholder.markdown(f"Prompt Sent to GPT : {temp_sys_prompt_1} \n\n {prompt_text}")
                     message_placeholder.markdown(follow_up_question)
             st.session_state.messages.append({"role": "assistant", "content": follow_up_question})
         else:
@@ -219,4 +219,4 @@ if "messages" in st.session_state:
                     
                     st.success("Images created")
 
-        st.session_state.messages.append({"role": "assistant", "content": "Please provide more details if needed."})
+        # st.session_state.messages.append({"role": "assistant", "content": "Please provide more details if needed."})
