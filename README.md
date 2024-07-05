@@ -1,4 +1,4 @@
-# Jewelry Design App
+# Jewelsmith.ai
 
 This is a Streamlit-based web application for generating jewelry design recommendations and images based on user input using Amazon Bedrock Foundation models like Claude and StabilityAi for LLM and Image generation tasks. 
 
