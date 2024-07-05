@@ -29,3 +29,20 @@ This is a Streamlit-based web application for generating jewelry design recommen
 
 ## Project Structure
 
+```
+jewelry_design_app/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+├── config.py
+├── utils/
+│   ├── __init__.py
+│   ├── api_calls.py
+│   ├── image_processing.py
+│   ├── conversation.py
+└── assets/
+    └── outfit_images/
+
+```
+
