@@ -1,3 +1,5 @@
 streamlit
 requests
 Pillow
+langchain
+langchain_community

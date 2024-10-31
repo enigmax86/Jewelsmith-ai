@@ -6,3 +6,5 @@ upload_image_endpoint = "https://vv82oev143.execute-api.us-east-1.amazonaws.com/
 upload_conversation_endpoint = "https://37v1c57my6.execute-api.us-east-1.amazonaws.com/stage01"
 
 store_data_endpoint = "https://dv4zdxe2ac.execute-api.us-east-1.amazonaws.com/stage01"
+
+similarimagesfetcher = "https://6faay0x0ck.execute-api.us-east-1.amazonaws.com/default/SimilarImagesFetcher"
