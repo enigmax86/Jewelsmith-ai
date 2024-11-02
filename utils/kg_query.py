@@ -12,14 +12,14 @@ import os
 dotenv.load_dotenv()
 
 # LLM Configuration
-llm = ChatOpenAI(model="gpt-4", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 # Neo4j Configuration
 neo4j_url = os.getenv("NEO4J_CONNECTION_URL")
 neo4j_user = os.getenv("NEO4J_USER")
 neo4j_password = os.getenv("NEO4J_PASSWORD")
 
-print(neo4j_url , neo4j_user , neo4j_password)
+# print(neo4j_url , neo4j_user , neo4j_password)
 
 # Cypher generation prompt
 cypher_generation_template = """
@@ -27,9 +27,9 @@ You are an expert Neo4j Cypher translator who converts English to Cypher based o
 1. Generate Cypher query compatible ONLY for Neo4j Version 5
 2. Do not use EXISTS, SIZE, HAVING keywords in the cypher. Use alias when using the WITH keyword
 3. Use only Nodes and relationships mentioned in the schema
-4. Always do a case-insensitive and fuzzy search for any properties related search. Eg: to search for a Client, use `toLower(client.id) contains 'neo4j'`. To search for Slack Messages, use 'toLower(SlackMessage.text) contains 'neo4j'`. To search for a project, use `toLower(project.summary) contains 'logistics platform' OR toLower(project.name) contains 'logistics platform'`.)
+4. Always do a case-insensitive and fuzzy search for any properties related search. 
 5. Never use relationships that are not mentioned in the given schema
-6. When asked about projects, Match the properties using case-insensitive matching and the OR-operator, E.g, to find a logistics platform -project, use `toLower(project.summary) contains 'logistics platform' OR toLower(project.name) contains 'logistics platform'`.
+6. Make sure there is no error in the cypher query in terms of syntax
 
 schema: {schema}
 
@@ -37,9 +37,9 @@ Question: {question}
 """
 
 # Define cypher and QA prompt templates
-cypher_generation_template = """
-(schema: {schema}, question: {question})...
-"""
+# cypher_generation_template = """
+# (schema: {schema}, question: {question})...
+# """
 cypher_prompt = PromptTemplate(template=cypher_generation_template, input_variables=["schema", "question"])
 
 # qa_prompt_template = """
@@ -55,7 +55,7 @@ Make the answer sound as a response to the question. Do not mention that you bas
 
 If the provided information is empty, give the recommendations according to the provided context from your side.
 
-Final answer should have 1 top recommendation and 2-3 other recommendations structed properly and separated by new lines as a string. 
+Final answer should have 1 top recommendation and 2-3 other recommendations structed properly as a response from a chatbot and separated by new lines as a string. 
 Information:
 {context}
 
@@ -74,7 +74,7 @@ def query_graph(user_input):
     return result
 
 def generate_recommendations(basic_info):
-    user_input = f"Recommend {basic_info['jewelry_type']} for a {basic_info['age_group']} year old {basic_info['gender']} for a {basic_info['occasion']}."
+    user_input = f"Recommend {basic_info['jewelry_type']} for a {basic_info['age_group']} year old {basic_info['gender']} for a {basic_info['occasion']}. Make sure to only include suggestions for this jewelryType : {basic_info['jewelry_type']} "
     result = query_graph(user_input)
     recommendations = result["result"]
     return recommendations

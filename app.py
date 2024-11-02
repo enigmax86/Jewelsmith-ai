@@ -5,7 +5,7 @@ import io
 from PIL import Image
 from utils.api_calls import call_endpoint, store_in_mongodb
 from utils.image_processing import get_image_response,save_image, generate_image_captions,generate_image_captions_froms3, upload_image_to_s3
-from utils.conversation import get_chatbot_response,format_and_upload_conversation, basic_info_to_string, temp_sys_prompt_1 , display_image_options , process_image_followup_ques
+from utils.conversation import get_chatbot_response,format_and_upload_conversation, basic_info_to_string, temp_sys_prompt_1 , temp_sys_prompt_2, display_image_options , process_image_followup_ques
 from utils.api_calls import fetch_similar_images
 from utils.kg_query import generate_recommendations
 st.set_page_config(layout="wide")
@@ -50,6 +50,7 @@ if submitted:
     instruc1 = instruc = "Basic Info : " + basic_info_str 
     # follow_up_question1 = get_chatbot_response({'sys_prompt': temp_sys_prompt_1, 'user_prompt': instruc1})
     follow_up_question1 = generate_recommendations(st.session_state.basic_info)
+
     
     st.session_state.messages = [{"role": "user", "content": basic_info_str}]
     st.session_state.messages.append({"role": "assistant", "content": follow_up_question1})
@@ -71,8 +72,21 @@ if "messages" in st.session_state:
     if question := st.chat_input(""):
         with st.chat_message("user"):
             st.markdown(question)
-
         st.session_state.messages.append({"role": "user", "content": question})
+        if st.session_state.question_count == 1:
+            
+            if question == "None":
+                process_image_followup_ques("None", None)
+            else: 
+                chosenidx = int(question) - 1
+                chosen_url = st.session_state.image_urls[chosenidx] 
+                # if st.session_state.chosen_image_url:
+                        # Proceed after the user has made a choice
+                print("entered")
+                img_des = generate_image_captions_froms3(chosen_url)
+
+                process_image_followup_ques(chosen_url, img_des)
+                print("ready to exit")
         st.session_state.question_count += 1
 
         if st.session_state.question_count < st.session_state.max_questions:
@@ -84,51 +98,29 @@ if "messages" in st.session_state:
                         if msg["role"] == "user" or msg["role"] == "assistant":
                             prompt_text += f" {msg['role']} : {msg['content']} \n\n"
                     
-                    follow_up_question = get_chatbot_response({'sys_prompt': temp_sys_prompt_1, 'user_prompt': prompt_text})
+                    if st.session_state.question_count <= 1:
+                        follow_up_question = get_chatbot_response({'sys_prompt': temp_sys_prompt_2, 'user_prompt': prompt_text})
+                        print(f"\n \n {st.session_state.question_count}")
+                    else: 
+                        follow_up_question = get_chatbot_response({'sys_prompt': temp_sys_prompt_2, 'user_prompt': prompt_text})
                     message_placeholder.markdown(follow_up_question)
             st.session_state.messages.append({"role": "assistant", "content": follow_up_question})
+                    # design_prompt = follow_up_question.split(":")[-1].strip()
             jtype = st.session_state.basic_info['jewelry_type']
 
             if st.session_state.question_count == 1:
-                image_urls = fetch_similar_images(follow_up_question, jtype)
-                columns = st.columns(len(image_urls))
+                st.session_state.image_urls = fetch_similar_images(follow_up_question, jtype)
 
-                for idx, url in enumerate(image_urls):
+                # if len(image_urls):
+                # Display the images in columns
+                columns = st.columns(len(st.session_state.image_urls))
+
+                for idx, url in enumerate(st.session_state.image_urls):
                     with columns[idx]:
                         st.image(url, caption=f"Image {idx + 1}")
 
-                if "chosen_image_url" not in st.session_state:
-
-        #########################################################################################################3 
-                    with st.form("image_selection_form"):
-                        st.write("Please choose an image that matches your preference:")
-                        chosen = st.radio("Image", ["0", "1", "2", "None"])
-
-                        submitted = st.form_submit_button("Submit")
-    
-                    if submitted:
-                        if chosen == "None": 
-                            st.session_state.chosen_image_url = "None"
-                        else: 
-                            chosenidx = chosen[-1]-1
-                            st.session_state.chosen_image_url = image_urls[chosenidx]
-
-
-                    #########################################################################################################3 
-
-                    print("chosen image url saved")
-                    print(st.session_state.chosen_image_url)
-                if st.session_state.chosen_image_url:
-                    # Proceed after the user has made a choice
-                    print("entered")
-                    img_des = generate_image_captions_froms3(st.session_state.chosen_image_url)
-
-                    process_image_followup_ques(st.session_state.chosen_image_url, img_des)
-                    print("ready to exit")
-            else:
-                # st.write("Please select an image to proceed.")
-                pass
-                
+                mssg = ("\n Please choose any design from above if you like them or type None if you would have something else in your mind : ['1' , '2' , '3' , 'None' ] \n")
+                st.write(mssg)
         else:
 
             with st.chat_message("assistant"):
